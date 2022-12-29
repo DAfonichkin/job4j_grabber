@@ -30,4 +30,18 @@ public class HabrCareerParse {
             });
         }
     }
+
+    private static String retrieveDescription(String link) throws IOException {
+        StringBuilder rsl = new StringBuilder();
+        Connection connection = Jsoup.connect(link);
+        Document document = connection.get();
+        Elements rows = document.select(".style-ugc");
+        rows.forEach(row -> {
+            for (int i = 0; i < row.childNodeSize(); i++) {
+                rsl.append(Jsoup.parse(row.childNode(i).toString()).text());
+                rsl.append(System.lineSeparator());
+            }
+        });
+        return rsl.toString();
+    }
 }
