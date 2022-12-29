@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class Post {
 
-    private final int id;
+    private int id;
     private final String link;
     private String title;
     private String description;
@@ -16,10 +16,28 @@ public class Post {
         this.link = link;
     }
 
+    public Post(int id, String link, String title, String description, LocalDateTime created) {
+        this.id = id;
+        this.link = link;
+        this.title = title;
+        this.description = description;
+        this.created = created;
+    }
+
+    public Post(String link, String title, String description, LocalDateTime created) {
+        this.link = link;
+        this.title = title;
+        this.description = description;
+        this.created = created;
+    }
+
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
      public String getLink() {
         return link;
     }
