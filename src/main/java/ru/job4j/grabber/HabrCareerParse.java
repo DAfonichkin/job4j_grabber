@@ -15,12 +15,9 @@ import java.util.List;
 public class HabrCareerParse implements Parse {
 
     private static final String SOURCE_LINK = "https://career.habr.com";
-
-    private final DateTimeParser dateTimeParser;
-
-    private int postId = 0;
-
     private static final String PAGE_LINK = String.format("%s/vacancies/java_developer", SOURCE_LINK);
+    private static final int PAGE_COUNT = 5;
+    private final DateTimeParser dateTimeParser;
 
     public HabrCareerParse(DateTimeParser dateTimeParser) {
         this.dateTimeParser = dateTimeParser;
@@ -28,7 +25,11 @@ public class HabrCareerParse implements Parse {
 
     public static void main(String[] args) {
         Parse parser = new HabrCareerParse(new HabrCareerDateTimeParser());
-        List<Post> posts = parser.list(PAGE_LINK);
+        List<Post> posts = new ArrayList<>();
+        for (int i = 1; i <= PAGE_COUNT; i++) {
+            String link = PAGE_LINK + "?page=" + i;
+            posts.addAll(parser.list(link));
+        }
         posts.forEach(System.out::println);
     }
 
@@ -46,35 +47,36 @@ public class HabrCareerParse implements Parse {
         return rsl.toString();
     }
 
+    private List<Post> getPostsByElement(Elements rows) {
+        List<Post> postList = new ArrayList<>();
+        rows.forEach(row -> {
+            Element titleElement = row.select(".vacancy-card__title").first();
+            Element linkElement = titleElement.child(0);
+            Element dateElement = row.select(".vacancy-card__date").first().child(0);
+            String date = dateElement.attr("datetime");
+            String vacancyName = titleElement.text();
+            String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+            String description;
+            try {
+                description = retrieveDescription(vacancyLink);
+            } catch (IOException e) {
+                throw new IllegalArgumentException();
+            }
+            postList.add(new Post(vacancyLink, vacancyName, description, dateTimeParser.parse(date)));
+        });
+        return postList;
+    }
+
     @Override
     public List<Post> list(String link) {
-        List<Post> rsl = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Connection connection = Jsoup.connect(link + "?page=" + i);
-            Document document;
-            try {
-                document = connection.get();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            Elements rows = document.select(".vacancy-card__inner");
-            rows.forEach(row -> {
-                Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
-                Element dateElement = row.select(".vacancy-card__date").first().child(0);
-                String date = dateElement.attr("datetime");
-                String vacancyName = titleElement.text();
-                String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                String description;
-                try {
-                    description = retrieveDescription(vacancyLink);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                rsl.add(new Post(postId, vacancyLink, vacancyName, description, dateTimeParser.parse(date)));
-                postId++;
-            });
+        Connection connection = Jsoup.connect(link);
+        Document document;
+        try {
+            document = connection.get();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return rsl;
+        Elements rows = document.select(".vacancy-card__inner");
+        return getPostsByElement(rows);
     }
 }
