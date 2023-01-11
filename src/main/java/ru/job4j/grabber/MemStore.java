@@ -34,4 +34,8 @@ public class MemStore implements Store {
         }
         return rsl;
     }
+
+    @Override
+    public void close() throws Exception {
+    }
 }
