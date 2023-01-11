@@ -22,6 +22,9 @@
       <properties>
         <liquibase.config>db/liquibase.properties</liquibase.config>
       </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
     </profile>
   </profiles>
   <dependencies>
