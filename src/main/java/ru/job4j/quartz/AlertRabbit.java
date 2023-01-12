@@ -53,7 +53,7 @@ public class AlertRabbit {
 
     private static Properties initConfig() {
         Properties config = new Properties();
-        try (InputStream is = AlertRabbit.class.getClassLoader().getResourceAsStream("rabbit.properties")) {
+        try (InputStream is = AlertRabbit.class.getClassLoader().getResourceAsStream("app.properties")) {
             config.load(is);
         } catch (IOException e) {
             e.printStackTrace();
