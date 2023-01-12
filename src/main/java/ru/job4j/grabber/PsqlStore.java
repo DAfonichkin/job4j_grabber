@@ -87,7 +87,7 @@ public class PsqlStore implements Store {
         try (PreparedStatement statement = cnn.prepareStatement("select * from post where id = ?")) {
             statement.setInt(1, id);
             try (ResultSet rslSet = statement.executeQuery()) {
-                while (rslSet.next()) {
+                if (rslSet.next()) {
                     post = convertResultToPost(rslSet);
                 }
             }
