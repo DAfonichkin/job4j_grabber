@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HabrCareerParse implements Parse {
-    private static final String SOURCE_LINK = "https://career.habr.com";
-    private static final String PAGE_LINK = String.format("%s/vacancies/java_developer", SOURCE_LINK);
     private static final int PAGE_COUNT = 5;
     private final DateTimeParser dateTimeParser;
 
@@ -39,13 +37,13 @@ public class HabrCareerParse implements Parse {
         return rsl.toString();
     }
 
-    private Post getPost(Element row) {
+    private Post getPost(Element row, String link) {
         Element titleElement = row.select(".vacancy-card__title").first();
         Element linkElement = titleElement.child(0);
         Element dateElement = row.select(".vacancy-card__date").first().child(0);
         String date = dateElement.attr("datetime");
         String vacancyName = titleElement.text();
-        String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+        String vacancyLink = String.format("%s%s", link, linkElement.attr("href"));
         String description;
         description = retrieveDescription(vacancyLink);
         return new Post(vacancyLink, vacancyName, description, dateTimeParser.parse(date));
@@ -63,7 +61,7 @@ public class HabrCareerParse implements Parse {
                 throw new IllegalArgumentException();
             }
             Elements rows = document.select(".vacancy-card__inner");
-            rows.forEach(row -> posts.add(getPost(row)));
+            rows.forEach(row -> posts.add(getPost(row, link)));
         }
         return posts;
     }
